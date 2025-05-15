@@ -1,4 +1,4 @@
-version: '3.9'
+
 services:
   api:
     build: .
@@ -14,7 +14,7 @@ services:
       - opa
 
   db:
-    image: postgres:16
+    image: postgres:17.5
     environment:
       POSTGRES_DB: todo
       POSTGRES_PASSWORD: postgres
@@ -32,10 +32,11 @@ services:
       - "8181:8181"
 
   keycloak:
-    image: quay.io/keycloak/keycloak:24.0
+    image: quay.io/keycloak/keycloak:26.0.8
     command: ["start-dev"]
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     ports:
       - "8080:8080"
+

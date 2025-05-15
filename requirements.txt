@@ -1,10 +1,11 @@
-Flask>=2.2,<3
-Flask-Smorest>=0.41
-marshmallow>=3.19
-Authlib>=1.2
-httpx>=0.24
-cachetools>=5.3
-psycopg2-binary>=2.9
-Alembic>=1.11
-gunicorn>=20.1
-pytest>=7.3
+Flask>=3.1.1,<4.0.0                 # Web framework :contentReference[oaicite:11]{index=11}
+flask-smorest>=0.46.1,<1.0.0        # OpenAPI + Flask integration :contentReference[oaicite:12]{index=12}
+marshmallow>=4.0.0,<5.0.0           # Serialization & validation :contentReference[oaicite:13]{index=13}
+Authlib>=1.5.2,<2.0.0               # OIDC/JWT client :contentReference[oaicite:14]{index=14}
+httpx>=0.28.1,<1.0.0                # HTTP client :contentReference[oaicite:15]{index=15}
+cachetools>=5.5.2,<6.0.0            # Caching utilities :contentReference[oaicite:16]{index=16}
+psycopg[binary,pool]>=3.2.9,<4.0.0  # PostgreSQL driver :contentReference[oaicite:17]{index=17}
+alembic>=1.15.2,<2.0.0              # DB migrations :contentReference[oaicite:18]{index=18}
+gunicorn>=23.0.0,<24.0.0            # WSGI server :contentReference[oaicite:19]{index=19}
+pytest>=8.3.5,<9.0.0                # Testing framework :contentReference[oaicite:20]{index=20}
+pydantic>=2.11.4,<3.0.0             # Data validation/models :contentReference[oaicite:21]{index=21}
