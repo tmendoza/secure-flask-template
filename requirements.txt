@@ -9,3 +9,4 @@ alembic>=1.15.2,<2.0.0              # DB migrations :contentReference[oaicite:18
 gunicorn>=23.0.0,<24.0.0            # WSGI server :contentReference[oaicite:19]{index=19}
 pytest>=8.3.5,<9.0.0                # Testing framework :contentReference[oaicite:20]{index=20}
 pydantic>=2.11.4,<3.0.0             # Data validation/models :contentReference[oaicite:21]{index=21}
+prometheus-client>=0.16.0,<1.0.0  # Metrics exposition for Prometheus
