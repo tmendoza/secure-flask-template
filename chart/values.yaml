@@ -1,0 +1,5 @@
+image:
+  repository: "your-org/todo-svc"
+  tag: "latest"
+service:
+  port: 5000

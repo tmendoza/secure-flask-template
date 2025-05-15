@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-svc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-svc
+  template:
+    metadata:
+      labels:
+        app: todo-svc
+    spec:
+      containers:
+        - name: api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.service.port }}
+        - name: opa
+          image: openpolicyagent/opa:0.63.0
+          args: ["run","--server","--watch","/policies"]
+          volumeMounts:
+            - name: policies
+              mountPath: /policies
+      volumes:
+        - name: policies
+          configMap:
+            name: todo-svc-policies

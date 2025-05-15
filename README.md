@@ -1,267 +1,362 @@
-# secure-flask-template – *Internal Flask Micro‑service Starter Kit*
-A Flask Application Starter Kit for Newbies to OIDC, ABAC, OPA and Pydantic
+# Todo-Svc – Internal Flask Microservice Starter Kit
 
-## 1. Introduction – What Are We Building?
-
-### 1.1 Problem Statement
-
-In modern enterprise systems, applications are increasingly built as a collection of small, independent services (microservices). Each microservice is responsible for a specific business function and communicates over HTTP APIs. However, without a standardized structure, each team may implement:
-
-* Different authentication mechanisms
-* Inconsistent authorization checks
-* Varying data validation practices
-* Divergent deployment pipelines
-
-This inconsistency creates friction in scaling, maintaining, and securing microservices.
-
-### 1.2 Objective
-
-The objective of this project is to provide a comprehensive, production-ready **Flask micro-service starter kit** that:
-
-* Implements **JWT-based authentication** using an OIDC provider (Keycloak).
-* Enforces **Attribute-Based Access Control (ABAC)** policies via Open Policy Agent (OPA).
-* Exposes RESTful **CRUD APIs** for basic resource management (e.g., Todo items).
-* Utilizes **Pydantic** for data validation and serialization.
-* Supports **containerization** via Docker and deployment via K3s.
-* Leverages **GitOps** for deployment consistency via Flux CD.
-* Manages secrets securely using **Vault**.
-
-### 1.3 Target Audience
-
-* Developers with minimal experience in Python, Kubernetes, and Docker who need a ready-to-use template for building secure, scalable Flask microservices.
+[![Build Status](https://img.shields.io/github/actions/workflow/status/your-org/todo-svc/ci.yml)](https://github.com/your-org/todo-svc/actions)
+[![Tests Coverage](https://img.shields.io/codecov/c/github/your-org/todo-svc)](https://codecov.io/gh/your-org/todo-svc)
+[![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
+[![Docker Pulls](https://img.shields.io/docker/pulls/your-org/todo-svc)](https://hub.docker.com/r/your-org/todo-svc)
 
 ---
 
-## 2. Detailed Architecture Breakdown
+## 🚀 Quick Start
 
-### 2.1 Architectural Overview
+```bash
+git clone https://github.com/your-org/todo-svc.git
+cd todo-svc
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+docker-compose up --build
+docker-compose exec api python scripts/run_migrations.py
+````
 
-```
-┌─────────────────────────────────────────┐
-│                Client                  │
-│  (CLI, Postman, React, etc.)           │
-└─────────────────────────────────────────┘
-             │  (HTTP + JWT)
-             ▼
-┌─────────────────────┐      ┌───────────────┐
-│     Flask API       │─────▶│ Open Policy   │
-│  (Gunicorn + Auth)  │◀─────│ Agent (OPA)   │
-│  - JWT verification │      │ - ABAC Rules  │
-│  - CRUD logic       │      └───────────────┘
-│  - OpenAPI docs     │
-└─────────────────────┘
-       │
-       │ (SQL)
-       ▼
-┌─────────────┐
-│ PostgreSQL  │
-└─────────────┘
-```
-
-### 2.2 Component Breakdown
-
-| Component      | Role                       | Why We Use It                                                          |
-| -------------- | -------------------------- | ---------------------------------------------------------------------- |
-| **Flask**      | Web framework              | Simple, lightweight, and well-supported in the Python ecosystem.       |
-| **Gunicorn**   | WSGI server                | Production-ready server for handling multiple concurrent requests.     |
-| **Authlib**    | OIDC client                | Seamlessly handles JWT verification and key rotation.                  |
-| **Pydantic**   | Data validation            | Strong data validation using Python types and JSON schemas.            |
-| **OPA**        | Policy engine              | Centralizes authorization logic in a reusable, testable policy engine. |
-| **Rego**       | Policy language            | Declarative, logic-based policy definition for OPA.                    |
-| **PostgreSQL** | Database                   | ACID-compliant, robust, and highly scalable relational database.       |
-| **Vault**      | Secrets manager            | Securely manages DB credentials and JWT keys without hardcoding.       |
-| **K3s**        | Kubernetes distro          | Lightweight Kubernetes, ideal for local dev and edge deployments.      |
-| **Helm**       | Kubernetes package manager | Deploys services as versioned, reusable templates.                     |
-| **Flux CD**    | GitOps controller          | Automatically applies Git changes to the cluster.                      |
+* Health check: `curl http://localhost:5000/health`
+* API docs: `http://localhost:5000/openapi.json`
+* CRUD: `http://localhost:5000/v1/todos/`
 
 ---
 
-## 3. Repository Structure and Code Organization
+## 📝 Table of Contents
+
+- [Todo-Svc – Internal Flask Microservice Starter Kit](#todo-svc--internal-flask-microservice-starter-kit)
+  - [🚀 Quick Start](#-quick-start)
+  - [📝 Table of Contents](#-table-of-contents)
+  - [📖 Introduction](#-introduction)
+  - [🛠️ Prerequisites](#️-prerequisites)
+    - [Software](#software)
+    - [Accounts (for production)](#accounts-for-production)
+  - [📥 Getting Started](#-getting-started)
+  - [🏗️ Project Structure](#️-project-structure)
+  - [🔍 Core Concepts \& Architecture](#-core-concepts--architecture)
+    - [What this Application Is \& How It Works](#what-this-application-is--how-it-works)
+    - [Component Breakdown](#component-breakdown)
+  - [📚 Dependencies \& Tools](#-dependencies--tools)
+    - [Python Packages](#python-packages)
+    - [Dev Tools](#dev-tools)
+    - [CI/CD](#cicd)
+  - [🏃‍♂️ Usage \& Features](#️-usage--features)
+    - [Endpoints](#endpoints)
+    - [Example](#example)
+  - [✅ Testing](#-testing)
+  - [🐳 Docker \& Containerization](#-docker--containerization)
+  - [☁️ Deployment](#️-deployment)
+    - [Docker \& Docker COmpose](#docker--docker-compose)
+    - [Helm + K3s](#helm--k3s)
+    - [GitOps (Flux CD)](#gitops-flux-cd)
+  - [🔧 Logging \& Monitoring](#-logging--monitoring)
+  - [⚙️ CI/CD Pipeline](#️-cicd-pipeline)
+  - [📈 Extending the Starter Kit](#-extending-the-starter-kit)
+  - [🙋 Frequently Asked Questions](#-frequently-asked-questions)
+  - [🤝 Contributing](#-contributing)
+  - [📜 License](#-license)
+  - [🎉 Acknowledgements \& Resources](#-acknowledgements--resources)
+  - [🧾 Changelog](#-changelog)
+
+---
+
+## 📖 Introduction
+
+**What is this?**
+A Flask-based, Docker-ready microservice template for building secure, production-grade CRUD APIs.
+
+**Why use it?**
+
+* Consistent folder layout & best practices
+* JWT/OIDC authentication via Keycloak
+* ABAC authorization via OPA/Rego
+* JSON validation with Pydantic & OpenAPI docs
+* PostgreSQL persistence using **psycopg2**
+* One-command local dev (Docker Compose)
+* GitOps deploy to K3s (Helm + Flux CD)
+* Built-in testing & CI pipeline
+
+**Who is this for?**
+Developers new to Python microservices or returning after a hiatus.
+
+**What you’ll learn**
+Flask fundamentals, REST APIs, Docker, database migrations, GitOps, and more.
+
+---
+
+## 🛠️ Prerequisites
+
+### Software
+
+* **Python 3.12+** (with `venv`)
+* **pip** or **pipx**
+* **Docker & Docker Compose** (optional but recommended)
+* **Git**
+
+### Accounts (for production)
+
+* Docker Hub (or private registry)
+* Kubernetes cluster credentials (optional)
+
+---
+
+## 📥 Getting Started
+
+1. **Clone the repo**
+
+   ```bash
+   git clone https://github.com/your-org/todo-svc.git
+   cd todo-svc
+   ```
+2. **Create & activate virtual environment**
+
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
+3. **Install dependencies**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. **Environment configuration**
+
+   ```bash
+   cp .env.example .env
+   # edit .env: FLASK_ENV, DATABASE_URL, OIDC_ISSUER, OPA_URL
+   ```
+5. **Run locally**
+
+   ```bash
+   docker-compose up --build
+   docker-compose exec api python scripts/run_migrations.py
+   ```
+6. **Verify**
+
+   * Health: `curl http://localhost:5000/health`
+   * API docs: `http://localhost:5000/openapi.json`
+   * CRUD: see [Usage & Features](#🏃‍♂️-usage--features)
+
+---
+
+## 🏗️ Project Structure
 
 ```
-{{ cookiecutter.module_name }}/
+.
 ├── app/
-│   ├── __init__.py      # App factory, extension registration
-│   ├── api/
-│   │   └── v1/
-│   │       └── todos.py # CRUD API endpoints
-│   ├── auth/
-│   │   ├── oidc.py      # JWT verification
-│   │   └── opa.py       # OPA client
-│   ├── core/
-│   │   └── models.py    # SQLAlchemy models
-│   ├── db.py            # Database initialization
-│   ├── schemas.py       # Pydantic schemas
-│   └── services.py      # Business logic layer
-├── migrations/          # Alembic migrations
-├── policies/            # OPA Rego policies
-├── tests/               # Pytest test cases
-├── Dockerfile           # Container build file
-├── docker-compose.yml   # Local dev stack
-├── chart/               # Helm chart for K3s deployment
-├── .env.example         # Example environment variables
-├── Makefile             # Dev commands (lint, test, build)
-└── README.md            # Comprehensive walkthrough
+│   ├── __init__.py         # Flask app factory
+│   ├── api/v1/todos.py     # CRUD endpoints & Flask-Smorest
+│   ├── auth/              
+│   │   ├── oidc.py         # Authlib JWT/OIDC setup
+│   │   └── opa.py          # OPA guard decorator
+│   ├── core/models.py      # DB models
+│   ├── db.py               # psycopg2 connection helper
+│   ├── schemas.py          # Marshmallow schemas (TodoSchema)
+│   └── services.py         # Business logic (CRUD functions)
+├── migrations/             # SQL migration scripts
+├── policies/               # OPA policies (allow_all.rego)
+├── scripts/                # Helpers (run_migrations.py)
+├── tests/                  # pytest tests
+├── Dockerfile              # Multi-stage build
+├── docker-compose.yml      # Dev stack (api, db, keycloak, opa)
+├── chart/                  # Helm chart for K3s
+├── .env.example            # Example environment variables
+├── Makefile                # lint, test, run, migrations
+├── requirements.txt        # Python deps
+└── README.md               # This file
 ```
 
 ---
 
-## 4. Implementation Guide – From Zero to Running
+## 🔍 Core Concepts & Architecture
 
-### 4.1 Prerequisite Installation
+### What this Application Is & How It Works
 
-1. **System Packages:**
+This **Todo-Svc** is a “to-do list” microservice: authenticated users can **create**, **read**, **update**, and **delete** todo items stored in PostgreSQL. Each request must present a valid JWT (issued by Keycloak), then the app calls OPA (sidecar) to authorize the action. Incoming data is validated by Pydantic; outgoing responses are serialized via Marshmallow. You can run locally with Docker Compose or deploy to K3s via Helm + Flux CD.
+
+### Component Breakdown
+
+| Component                   | Role in App                    | Why Chosen & How It Functions                                                                                                       |
+| --------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Flask**                   | Core web framework             | - **Why:** Minimalistic, easy to learn<br>- **How:** Defines routes/blueprints for `/v1/todos/` and `/health` endpoint              |
+| **Gunicorn**                | WSGI server                    | - **Why:** Production-ready concurrency<br>- **How:** Launches multiple worker processes to serve the Flask app                     |
+| **Authlib**                 | OIDC/JWT validation            | - **Why:** Simplifies token verification<br>- **How:** Fetches JWKs from Keycloak, decodes tokens, and checks claims                |
+| **Flask-Smorest**           | OpenAPI spec & request parsing | - **Why:** Auto-generates documentation<br>- **How:** Decorators produce `/openapi.json` and handle payload parsing                 |
+| **Pydantic**                | Request validation             | - **Why:** Type-driven, clear errors<br>- **How:** Defines `TodoIn` model; rejects invalid JSON payloads                            |
+| **Marshmallow**             | Response serialization         | - **Why:** Compatible with Flask-Smorest responses<br>- **How:** Defines `TodoSchema` for serializing output                        |
+| **OPA (Open Policy Agent)** | Authorization engine           | - **Why:** Externalizes policy from code<br>- **How:** Sidecar receives method, path, and claims; returns allow/deny                |
+| **Rego**                    | Policy language                | - **Why:** Declarative and testable policies<br>- **How:** `.rego` files evaluated by OPA                                           |
+| **PostgreSQL**              | Persistent data store          | - **Why:** ACID compliance, reliability<br>- **How:** Stores `todos` table; accessed via `psycopg2`                                 |
+| **psycopg2**                | PostgreSQL driver              | - **Why:** Direct SQL control<br>- **How:** `db.py` opens connections using the `DATABASE_URL` environment variable                 |
+| **Alembic**                 | Database migrations            | - **Why:** Versioned schema changes<br>- **How:** `scripts/run_migrations.py` applies `migrations/*.sql`                            |
+| **Vault**                   | Secrets management             | - **Why:** Keeps credentials out of code<br>- **How:** Sidecar injects secrets as environment variables or mounted files            |
+| **Docker & Compose**        | Local orchestration            | - **Why:** Reproducible development stack<br>- **How:** `docker-compose.yml` spins up `api`, `db`, `keycloak`, and `opa`            |
+| **K3s**                     | Lightweight Kubernetes         | - **Why:** Easy local/edge cluster<br>- **How:** Runs the same Docker images via Helm charts                                        |
+| **Helm**                    | Kubernetes package manager     | - **Why:** Templated, versioned deployments<br>- **How:** `chart/` directory defines Kubernetes manifests and ConfigMaps            |
+| **Flux CD**                 | GitOps controller              | - **Why:** Git as single source of truth<br>- **How:** Watches the chart repo (or an infra repo) and syncs changes into the cluster |
+
+---
+
+## 📚 Dependencies & Tools
+
+### Python Packages
+
+* Flask
+* Flask-Smorest
+* Authlib
+* httpx
+* cachetools
+* psycopg2-binary
+* Pydantic
+* Marshmallow
+* Alembic
+* gunicorn
+* pytest
+
+### Dev Tools
+
+* Black, isort, Flake8 (pre-commit)
+* Docker, docker-compose
+
+### CI/CD
+
+* GitHub Actions or Drone CI config in `.github/workflows/ci.yml`
+
+---
+
+## 🏃‍♂️ Usage & Features
+
+### Endpoints
+
+| Method | Path             | Description       |
+| ------ | ---------------- | ----------------- |
+| GET    | `/v1/todos/`     | List all todos    |
+| POST   | `/v1/todos/`     | Create a new todo |
+| GET    | `/v1/todos/{id}` | Get a todo by ID  |
+| PATCH  | `/v1/todos/{id}` | Update a todo     |
+| DELETE | `/v1/todos/{id}` | Delete a todo     |
+
+### Example
 
 ```bash
-sudo apt update && sudo apt install -y \
-  git curl make gnupg lsb-release ca-certificates \
-  python3.12 python3.12-venv python3-pip
-```
-
-2. **Docker & K3s:**
-
-```bash
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --yes --dearmor -o /usr/share/keyrings/docker.gpg
-sudo apt update && sudo apt install -y docker-ce docker-ce-cli containerd.io
-
-curl -sfL https://get.k3s.io | sh -s - --write-kubeconfig-mode 644
-```
-
-3. **Copier:**
-
-```bash
-python3 -m pip install --user pipx
-pipx install copier
+export TOKEN=...
+curl -X POST http://localhost:5000/v1/todos/ \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Buy milk"}'
 ```
 
 ---
 
-### 4.2 Scaffold the Service with Copier
-
-When you run the Copier command, it will automatically generate the following structure along with code stubs and initial content for each file:
-
-```
-{{ cookiecutter.module_name }}/
-├── app/
-│   ├── __init__.py      # Initializes the Flask app, registers Blueprints and extensions
-│   ├── api/
-│   │   └── v1/
-│   │       └── todos.py # CRUD API endpoints for the Todo resource (GET, POST, PATCH, DELETE)
-│   ├── auth/
-│   │   ├── oidc.py      # JWT verification via Authlib
-│   │   └── opa.py       # Middleware for OPA communication and authorization
-│   ├── core/
-│   │   └── models.py    # SQLAlchemy models defining the database schema (e.g., Todo model)
-│   ├── db.py            # Database initialization and configuration
-│   ├── schemas.py       # Pydantic schemas for request/response validation
-│   └── services.py      # Business logic layer; contains functions that perform CRUD operations
-├── migrations/          # Alembic migrations for database schema changes
-├── policies/            # OPA Rego policies, initially includes `allow_all.rego` as a permissive rule
-├── tests/               # Pytest test cases for API endpoints and policy checks
-├── Dockerfile           # Container build file for Flask API and OPA sidecar
-├── docker-compose.yml   # Local development stack: API + Postgres + Keycloak + OPA
-├── chart/               # Helm chart for K3s deployment
-├── .env.example         # Example environment variables
-├── Makefile             # Dev commands (lint, test, build)
-└── README.md            # Comprehensive walkthrough
-```
-
-### 4.2.1 Command to Scaffold the Service
+## ✅ Testing
 
 ```bash
-copier gh:YOUR-ORG/flask-microservice-template my-todo-svc
-cd my-todo-svc
+pytest --cov=app
 ```
 
-Copier will ask you the following questions:
-
-* **service\_name:** A human-readable name for the service (e.g., `todo-svc`)
-* **module\_name:** The Python module name (e.g., `todo`)
-* **port:** The default port for the service (e.g., `5000`)
-
-After answering these prompts, the specified structure will be generated, with the following key files populated:
-
-* **`todos.py`** – Implements CRUD endpoints using Flask-Smorest Blueprints.
-* **`oidc.py`** – Handles JWT validation via Authlib and caches JWKs.
-* **`opa.py`** – Communicates with the OPA sidecar, passing method, path, and claims for authorization checks.
-* **`models.py`** – Defines the `Todo` model using SQLAlchemy ORM.
-* **`db.py`** – Initializes the database connection and session management.
-* **`schemas.py`** – Defines input/output schemas using Pydantic for each endpoint.
-* **`services.py`** – Implements the core business logic and CRUD operations as isolated functions.
-
-This structure provides a clear separation of concerns:
-
-* **API Layer:** Handles HTTP requests/responses and validation.
-* **Auth Layer:** Ensures security via JWT and OPA.
-* **Core Layer:** Business logic and data processing.
-* **Data Layer:** SQLAlchemy ORM models and migrations.
-
-Now proceed to repository setup.
-
-### 4.3 Create the GitHub Repository
-
-1. **Initialize a new repository:**
-
-```bash
-git init my-todo-svc
-cd my-todo-svc
-git remote add origin https://github.com/YOUR-ORG/my-todo-svc.git
-```
-
-2. **Copy the template:**
-
-```bash
-copier gh:YOUR-ORG/flask-microservice-template my-todo-svc
-```
-
-3. **Set up CI/CD:**
-
-* Add `.gitea-ci.yml` for Drone CI configuration.
-* Add `infra/kustomize` for Flux CD deployment manifests.
+* Unit vs integration tests
+* Coverage reports via Codecov
 
 ---
 
-### 4.3 Code Walkthrough
+## 🐳 Docker & Containerization
 
-* **app/api/v1/todos.py:** CRUD routes, JWT-protected.
-* **app/auth/opa.py:** Middleware that communicates with OPA to enforce Rego policies.
-* **app/schemas.py:** Pydantic data models for request validation and response formatting.
-* **Dockerfile:** Multi-stage build with dependencies isolated in separate layers.
-* **Helm Chart:** Parameterized deployment configuration for K3s.
+* **Dockerfile:** Multi-stage, slim image
+* **docker-compose.yml:** Services: api, db, keycloak, opa
+* Health endpoint at `/health`
 
 ---
 
-### 4.4 Testing & Running Locally
+## ☁️ Deployment
 
+### Docker & Docker COmpose
 ```bash
 docker-compose up --build
+docker-compose exec api python scripts/run_migrations.py
 ```
-
-* Open Keycloak: [http://localhost:8080](http://localhost:8080)
-* Access API docs: [http://localhost:5000/openapi.json](http://localhost:5000/openapi.json)
-
----
-
-### 4.5 Deploy to K3s
+### Helm + K3s
 
 ```bash
-helm install todo-svc chart/ --set image.repository=my-registry/todo-svc --set image.tag=0.1.0
+docker build -t your-org/todo-svc:0.1.0 .
+docker push your-org/todo-svc:0.1.0
+
+helm upgrade --install todo-svc chart/ \
+  --set image.repository=your-org/todo-svc \
+  --set image.tag=0.1.0
 ```
 
-### 4.6 Common Errors & Troubleshooting
+### GitOps (Flux CD)
 
-| Issue              | Cause       | Solution                         |
-| ------------------ | ----------- | -------------------------------- |
-| `401 Unauthorized` | Invalid JWT | Verify JWT and Keycloak config   |
-| `403 Forbidden`    | Rego denial | Update OPA policy in `policies/` |
-| `DB connection`    | Vault issue | Check Vault logs                 |
+Configure Flux to watch this repo or a sibling infra repo.
 
 ---
 
-### 4.7 Next Steps
+## 🔧 Logging & Monitoring
 
-* Implement ABAC rules in `policies/`.
-* Add automated tests for OPA policies.
-* Integrate OpenTelemetry for tracing requests.
+* Python `logging` configured in `create_app()`
+* Optional Prometheus metrics via `/metrics`
 
-Happy building! 🚀
+---
+
+## ⚙️ CI/CD Pipeline
+
+Example (GitHub Actions):
+
+```yaml
+on: [push]
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with: python-version: 3.12
+      - run: pip install -r requirements.txt
+      - run: pytest --cov=app
+      - run: docker build . -t your-org/todo-svc:latest
+```
+
+---
+
+## 📈 Extending the Starter Kit
+
+* **Add endpoint:** blueprint → service → test
+* **Background jobs:** Celery or RQ
+* **Caching:** Redis + `flask-caching`
+
+---
+
+## 🙋 Frequently Asked Questions
+
+**Why psycopg2 over ORM?**
+Direct control, fewer abstractions—easier to see raw SQL.
+
+---
+
+## 🤝 Contributing
+
+Read `CODE_OF_CONDUCT.md`. Fork → feature branch → PR.
+
+---
+
+## 📜 License
+
+MIT © Your Company
+
+---
+
+## 🎉 Acknowledgements & Resources
+
+* [Flask Docs](https://flask.palletsprojects.com)
+* [Open Policy Agent](https://www.openpolicyagent.org/)
+* [Keycloak](https://www.keycloak.org/)
+
+---
+
+## 🧾 Changelog
+
+See `CHANGELOG.md`.
+

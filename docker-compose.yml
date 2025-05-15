@@ -1,0 +1,39 @@
+version: '3.9'
+services:
+  api:
+    build: .
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/todo
+      - OIDC_ISSUER=http://keycloak:8080/realms/dev
+      - OPA_URL=http://opa:8181/v1/data/http/authz
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+      - keycloak
+      - opa
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: todo
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+  opa:
+    image: openpolicyagent/opa:0.63.0
+    volumes:
+      - ./policies:/policies
+    command: ["run","--server","--watch","/policies"]
+    ports:
+      - "8181:8181"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    command: ["start-dev"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"

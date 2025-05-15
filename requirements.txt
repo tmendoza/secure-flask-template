@@ -1,0 +1,10 @@
+Flask>=2.2,<3
+Flask-Smorest>=0.41
+marshmallow>=3.19
+Authlib>=1.2
+httpx>=0.24
+cachetools>=5.3
+psycopg2-binary>=2.9
+Alembic>=1.11
+gunicorn>=20.1
+pytest>=7.3
