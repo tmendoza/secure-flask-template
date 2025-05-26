@@ -156,7 +156,6 @@ Flask fundamentals, REST APIs, Docker, database migrations, GitOps, and more.
 ├── Dockerfile              # Multi-stage build
 ├── docker-compose.yml      # Dev stack (api, db, keycloak, opa)
 ├── chart/                  # Helm chart for K3s
-├── .env.example            # Example environment variables
 ├── Makefile                # lint, test, run, migrations
 ├── requirements.txt        # Python deps
 └── README.md               # This file
@@ -211,7 +210,7 @@ This **Todo-Svc** is a “to-do list” microservice: authenticated users can **
 
 ### Dev Tools
 
-* Black, isort, Flake8 (pre-commit)
+* Black, isort, Flake8 (pre-commit) **optional**
 * Docker, docker-compose
 
 ### CI/CD
