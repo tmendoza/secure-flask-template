@@ -91,7 +91,7 @@ Flask fundamentals, REST APIs, Docker, database migrations, GitOps, and more.
 
 ### Software
 
-* **Python 3.12+** (with `venv`)
+* **Python 3.10+** (with `venv`)
 * **pip** or **pipx**
 * **Docker & Docker Compose** (optional but recommended)
 * **Git**
