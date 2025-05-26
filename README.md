@@ -14,7 +14,6 @@ git clone https://github.com/your-org/todo-svc.git
 cd todo-svc
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env
 docker-compose up --build
 docker-compose exec api python scripts/run_migrations.py
 ````
@@ -122,19 +121,13 @@ Flask fundamentals, REST APIs, Docker, database migrations, GitOps, and more.
    ```bash
    pip install -r requirements.txt
    ```
-4. **Environment configuration**
-
-   ```bash
-   cp .env.example .env
-   # edit .env: FLASK_ENV, DATABASE_URL, OIDC_ISSUER, OPA_URL
-   ```
-5. **Run locally**
+4. **Run locally**
 
    ```bash
    docker-compose up --build
    docker-compose exec api python scripts/run_migrations.py
    ```
-6. **Verify**
+5. **Verify**
 
    * Health: `curl http://localhost:5000/health`
    * API docs: `http://localhost:5000/openapi.json`
